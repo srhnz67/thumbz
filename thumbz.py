@@ -4,7 +4,7 @@
 import sys, os, io
 try:
 	from PIL import Image, ImageFile
-	import base64, glob, argparse, webbrowser, time, Tkinter, hashlib
+	import base64, glob, argparse, webbrowser, time, Tkinter
 	from reportlab.pdfgen import canvas
 except ImportError as e:
 	print "\nError importing required modules:\n" + str(e)
@@ -20,11 +20,6 @@ def usage(errMsg):
 	print errMsg
 	print "\nusage: " + sys.argv[0] + " [-h] [-d] [-o O] [-c C] [-t T] [-v]\n"
 	sys.exit(1)
-
-#def ihash(fname):
-#	print fname
-#	ihash = hashlib.md5(open(fname).read()).hexdigest()
-#	return ihash
 
 # Process commandline arguments
 argsp = argparse.ArgumentParser()
@@ -75,16 +70,13 @@ if args.t == 'gif':
 elif args.t == 'png':
 	ilist = glob.glob("*.png")
 elif args.t == 'all':
-	ilist = glob.glob("*.jpg") + glob.glob("*.gif") + glob.glob("*.png")
+	ilist = glob.glob("*.jp*g") + glob.glob("*.gif") + glob.glob("*.png")
 else:
-	ilist = glob.glob("*.jpg")
+	ilist = glob.glob("*.jp*g")
 
 if len(ilist) == 0:
 	print "ERROR:\tThere are no images of that type in \"" + iname + "\"\n"
 	sys.exit(1)
-
-        #size = sz,sz
-
 
 # Process the image list and create output files
 # HTML generator
@@ -142,8 +134,7 @@ if args.r == 'pdf' or args.r == 'all':
         pheight = 841
 	fontHeight = 16 # includes gap between lines, actual is 13
 
-	# Work out correct thumbnail size to meet column number,
-	# then use that value to set thumbnail size
+	# Use column number, padding and margin values to set thumbnail size
         sz = ((pwidth-(margin))/cols)-padding
 
 	# Set origin point for first image
@@ -162,15 +153,14 @@ if args.r == 'pdf' or args.r == 'all':
 				img = Image.open(ilist[f])
 				fExt = img.format
 				fSize = img.size
-				# fhash = ihash(ilist[f])
 				img.thumbnail((sz,sz))
 				img.save('imgTemp-' + str(f), format=fExt)
+				img.close()
 				c.drawImage('imgTemp-' + str(f), x, y + padding, width=sz, height=sz, preserveAspectRatio=True)
 				os.remove('imgTemp-'+str(f))
                                 # Create the image caption
 				c.drawString(x, y - fontHeight,"Filename: " + ilist[f][:sz/10] + "~")
 				c.drawString(x, y - (fontHeight * 2),"Original Size: " + str(fSize[0]) + " x " + str(fSize[1]))
-				# c.drawString(x, y - (fontHeight * 3),"MD5: " + fhash.upper())
 				x = x + (sz + padding)
 				f += 1
 			except IndexError:
@@ -201,9 +191,10 @@ if args.r == 'pdf' or args.r == 'all':
 	# Finished processing, summarise and write file
 	c.drawString(pwidth/2,margin / 3 + (fontHeight * 2),"End of images, Page " + str(pg) + " of " + str(pg))
 	c.drawString(pwidth/2,margin / 3 + fontHeight,"File generated: " + (time.strftime('%d/%m/%Y %H:%M:%S')))
-	c.save(author='Bob')
+	c.save()
 	print '\nPDF Report \"' + rname + '.pdf\" can be found in ' + iname + '\n'
 
 alist = ['all','htm','pdf']
+# Smartarse response to not specifying an output report format
 if args.r not in alist:
 	usage("\nWell...since you didn't specify a valid report output format (all, htm or pdf),\nthat was a bit of a waste of time...wasn't it?\n")
