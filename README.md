@@ -15,6 +15,7 @@ optional arguments:
   -r Report format  Report output format - html, pdf, all
   -v                View html report in browser when finished [Optional]
   
+  
   * Thumbnail scaling will be based on the number of columns requested + spaces between + margins.
   * Will insert a placeholder if a file with an image-like name is hit, but not a valid image.  This may happen if attempting to
       create a report directly from the output dir of a file carving tool.
