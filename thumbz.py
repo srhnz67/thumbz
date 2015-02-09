@@ -4,7 +4,7 @@
 import sys, os, io
 try:
 	from PIL import Image, ImageFile
-	import base64, glob, argparse, webbrowser, time, Tkinter
+	import base64, glob, argparse, webbrowser, time, Tkinter, hashlib
 	from reportlab.pdfgen import canvas
 except ImportError as e:
 	print "\nError importing required modules:\n" + str(e)
@@ -64,15 +64,15 @@ except IOError as err:
 	print "There is a problem accessing the source directory\nError Description: " + str(err) + "\n"
 	sys.exit(1)
 
-# Get a list of the target image types
+# Get a case insensitive list of the target image types
 if args.t == 'gif':
-	ilist = glob.glob("*.gif")
+	ilist = glob.glob("*.[g|G][i|I][f|F]")
 elif args.t == 'png':
-	ilist = glob.glob("*.png")
+	ilist = glob.glob("*.[p|P][n|N][g|G]")
 elif args.t == 'all':
-	ilist = glob.glob("*.jp*g") + glob.glob("*.gif") + glob.glob("*.png")
+	ilist = glob.glob("*.[j|J][p|P]*[g|G]") + glob.glob("*.[g|G][i|I][f|F]") + glob.glob("*.[p|P][n|N][g|G]")
 else:
-	ilist = glob.glob("*.jp*g")
+	ilist = glob.glob("*.[j|J][p|P]*[g|G]")
 
 if len(ilist) == 0:
 	print "ERROR:\tThere are no images of that type in \"" + iname + "\"\n"
@@ -134,7 +134,8 @@ if args.r == 'pdf' or args.r == 'all':
         pheight = 841
 	fontHeight = 16 # includes gap between lines, actual is 13
 
-	# Use column number, padding and margin values to set thumbnail size
+	# Work out correct thumbnail size to meet column number,
+	# then use that value to set thumbnail size
         sz = ((pwidth-(margin))/cols)-padding
 
 	# Set origin point for first image
@@ -155,7 +156,6 @@ if args.r == 'pdf' or args.r == 'all':
 				fSize = img.size
 				img.thumbnail((sz,sz))
 				img.save('imgTemp-' + str(f), format=fExt)
-				img.close()
 				c.drawImage('imgTemp-' + str(f), x, y + padding, width=sz, height=sz, preserveAspectRatio=True)
 				os.remove('imgTemp-'+str(f))
                                 # Create the image caption
@@ -194,7 +194,7 @@ if args.r == 'pdf' or args.r == 'all':
 	c.save()
 	print '\nPDF Report \"' + rname + '.pdf\" can be found in ' + iname + '\n'
 
-alist = ['all','htm','pdf']
 # Smartarse response to not specifying an output report format
+alist = ['all','htm','pdf']
 if args.r not in alist:
 	usage("\nWell...since you didn't specify a valid report output format (all, htm or pdf),\nthat was a bit of a waste of time...wasn't it?\n")
