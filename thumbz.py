@@ -1,3 +1,13 @@
+#!/usr/bin/python
+
+# Imports - Standard modules in Python
+import sys, os, io
+
+# Error check for version
+if sys.version_info < (2,7):
+	print("Requires Python version 2.7 or greater")
+	sys.exit(1)
+
 try:
 	from PIL import Image, ImageFile # pip install pillow if not installed
 	import base64, glob, argparse, webbrowser, time, hashlib
